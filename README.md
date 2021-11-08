@@ -15,7 +15,7 @@ O parâmetro que ela recebe é apenas o nome do arquivo, por exemplo:
 
 `tknz = JackTokenizer('name/to/path/file.jack')`
 
-Após definir a instância da classe como caminho para o arquivo, ele carrega o arquivo e idetifica os tokens no momento do instanciamento.
+Após definir a instância da classe com o caminho para o arquivo `.jack`, ela carrega o arquivo e identifica os tokens nesse processo.
 
 Para exportar o xml com os tokens, use:
 
