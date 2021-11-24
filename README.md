@@ -21,3 +21,17 @@ Para exportar o xml com os tokens, use:
 
 `tknz.export_xml()`
 
+## Classe CompilationEngine
+Para definir a classe CompilationEngine, importe-a:
+
+`from CompilationEngine import *`
+
+O parâmetro que ela recebe é apenas uma instância do JackTokenizer, por exemplo:
+
+`tknz = JackTokenizer('name/to/path/file.jack')`
+`ce = CompilationEngine(tknz)`
+
+Após definir a instância da classe, rode o comando `ce.run()` para executar a compilação.
+
+O parse tree é feito e o xml é salvo no mesmo diretório do arquivo `.jack`
+

@@ -1,3 +1,5 @@
+from os import write
+from os.path import exists
 
 OP_TERMS = ['+', '-', '*', '/', '&amp', '|', '&lt', '&gt', '=']
 
@@ -6,12 +8,13 @@ class CompilationEngine:
 
     def __init__(self, tknz):
         self.tknz = tknz
-        pass
+        self.file_name = tknz.file_name
+        self.begin = True
 
 
     def compile_statements(self):
 
-        print("<statements>")
+        self.write_xml_line("<statements>")
 
         token = self.tknz.get_token()
 
@@ -31,52 +34,42 @@ class CompilationEngine:
 
             self.compile_class_statements()
 
-        print("</statements>")
+        self.write_xml_line("</statements>")
 
 
     def compile_class_statements(self):
 
-        print("<classStatement>")
+        self.write_xml_line("<classStatement>")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
-        self.print_line()
-
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "{":
             raise Exception("Expected '{'")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_statements()
 
         if self.tknz.get_token() != "}":
             raise Exception("Expected '}'")
 
-        self.print_line()
+        self.engine_advance(token_advance=False)
         
-        print("</classStatement>")  
+        self.write_xml_line("</classStatement>")  
     
 
     def compile_if_statements(self):
 
-        print("<ifStatement>")
+        self.write_xml_line("<ifStatement>")
 
-        self.print_line()
-
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "(":
             raise Exception("Expected '('")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_expression()
 
@@ -85,41 +78,33 @@ class CompilationEngine:
         if self.tknz.get_token() != ")":
             raise Exception("Expected ')'")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "{":
             raise Exception("Expected '{'")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_statements()
 
         if self.tknz.get_token() != "}":
             raise Exception("Expected '}'")
 
-        self.print_line()
+        self.engine_advance(token_advance=False)
         
-        print("</ifStatement>")
+        self.write_xml_line("</ifStatement>")
     
 
     def compile_while_statements(self):
 
-        print("<whileStatement>")
+        self.write_xml_line("<whileStatement>")
 
-        self.print_line()
-
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "(":
             raise Exception("Expected '('")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_expression()
 
@@ -128,45 +113,35 @@ class CompilationEngine:
         if self.tknz.get_token() != ")":
             raise Exception("Expected ')'")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "{":
             raise Exception("Expected '{'")
 
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_statements()
 
         if self.tknz.get_token() != "}":
             raise Exception("Expected '}'")
 
-        self.print_line()
+        self.engine_advance(token_advance=False)
         
-        print("</whileStatement>")
+        self.write_xml_line("</whileStatement>")
 
 
     def compile_let_statements(self):
 
-        print("<letStatement>")
+        self.write_xml_line("<letStatement>")
 
-        self.print_line()
+        self.engine_advance()
 
-        self.tknz.advance()
-
-        self.print_line()
-        
-        self.tknz.advance()
+        self.engine_advance()
 
         if self.tknz.get_token() != "=":
             raise Exception("Expected '='")
 
-        self.print_line()
-
-        self.tknz.advance()
+        self.engine_advance()
 
         self.compile_expression()
 
@@ -175,16 +150,14 @@ class CompilationEngine:
         if self.tknz.get_token() != ";":
             raise Exception("Expected ';'")
 
-        self.print_line()
+        self.engine_advance()
 
-        self.tknz.advance()
-
-        print("</letStatement>")
+        self.write_xml_line("</letStatement>")
 
 
     def compile_expression(self):
 
-        print("<expression>")
+        self.write_xml_line("<expression>")
 
         self.compile_term()
 
@@ -200,16 +173,16 @@ class CompilationEngine:
         
             self.compile_term()
         
-        print("</expression>")
+        self.write_xml_line("</expression>")
 
 
     def compile_term(self):
 
-        print("<term>")
+        self.write_xml_line("<term>")
 
-        self.print_line()
+        self.engine_advance(token_advance=False)
 
-        print("</term>")
+        self.write_xml_line("</term>")
 
 
     def compile_var_name(self):
@@ -222,31 +195,49 @@ class CompilationEngine:
 
     def compile_op(self):
         
-        self.print_line()
-
+        self.engine_advance(token_advance=False)
     
-    def print_line(self):
+
+    def write_xml_line(self, line):
+
+        xml_file_path = f'xml/{self.file_name}T.xml'
+
+        if exists(xml_file_path) and self.begin:
+
+            with open(xml_file_path, 'w') as xml:
+
+                xml.write(f'{line}\n')
+            
+            self.begin = False
+        
+        elif not exists(xml_file_path):
+
+            with open(xml_file_path, 'w') as xml:
+
+                xml.write(f'{line}\n')
+
+        else:
+
+            with open(xml_file_path, 'a') as xml:
+
+                xml.write(f'{line}\n')
+          
+    
+
+    def engine_advance(self, token_advance=True):
 
         token = self.tknz.get_token()
         token_tye = self.tknz.token_tye()
 
-        print(f"<{token_tye}> {token} </{token_tye}>")
+        line = f'<{token_tye}> {token} </{token_tye}>'
+
+        self.write_xml_line(line)
+
+        if token_advance:
+
+            self.tknz.advance()
 
 
     def run(self):
         
         self.compile_statements()
-
-
-if __name__ == "__main__":
-
-    from JackTokenizer import *
-
-    tknz = JackTokenizer("test2.jack")
-    tknz.export_xml()
-    tknz.advance()
-
-
-    ce = CompilationEngine(tknz)
-
-    ce.run()

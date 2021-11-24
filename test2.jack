@@ -1,7 +1,5 @@
-class Main {
 
-    while ( count < 100 ) {
+while ( count < 100 ) {
     let count = count + 1;
-}
 }
 

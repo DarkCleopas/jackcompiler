@@ -1,4 +1,9 @@
 from JackTokenizer import *
+from CompilationEngine import *
 
-tknz = JackTokenizer("10/Square/Square.jack")
+tknz = JackTokenizer("test2.jack")
 tknz.export_xml()
+tknz.advance()
+
+ce = CompilationEngine(tknz)
+ce.run()
