@@ -1,0 +1,17 @@
+<tokens>
+<keyword> while </keyword>
+<symbol> ( </symbol>
+<identifier> count </identifier>
+<symbol> &lt </symbol>
+<integer> 100 </integer>
+<symbol> ) </symbol>
+<symbol> { </symbol>
+<keyword> let </keyword>
+<identifier> count </identifier>
+<symbol> = </symbol>
+<identifier> count </identifier>
+<symbol> + </symbol>
+<integer> 1 </integer>
+<symbol> ; </symbol>
+<symbol> } </symbol>
+</tokens>

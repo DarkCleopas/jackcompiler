@@ -1,0 +1,35 @@
+<statements>
+<whileStatement>
+<keyword> while </keyword>
+<symbol> ( </symbol>
+<expression>
+<term>
+<identifier> count </identifier>
+</term>
+<symbol> &lt </symbol>
+<term>
+<integer> 100 </integer>
+</term>
+</expression>
+<symbol> ) </symbol>
+<symbol> { </symbol>
+<statements>
+<letStatement>
+<keyword> let </keyword>
+<identifier> count </identifier>
+<symbol> = </symbol>
+<expression>
+<term>
+<identifier> count </identifier>
+</term>
+<symbol> + </symbol>
+<term>
+<integer> 1 </integer>
+</term>
+</expression>
+<symbol> ; </symbol>
+</letStatement>
+</statements>
+<symbol> } </symbol>
+</whileStatement>
+</statements>
