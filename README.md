@@ -29,9 +29,10 @@ Para definir a classe CompilationEngine, importe-a:
 O parâmetro que ela recebe é apenas uma instância do JackTokenizer, por exemplo:
 
 `tknz = JackTokenizer('name/to/path/file.jack')`
+
 `ce = CompilationEngine(tknz)`
 
 Após definir a instância da classe, rode o comando `ce.run()` para executar a compilação.
 
-O parse tree é feito e o xml é salvo no mesmo diretório do arquivo `.jack`
+O parse tree é feito e o xml é salvo no diretório `xml\`.
 
