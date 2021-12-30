@@ -1,0 +1,9 @@
+function Point.distance 2
+push argument 0
+pop pointer 0
+push constant 10
+push constant 20
+add
+push constant 30
+call Math.multiply 2
+pop local 0

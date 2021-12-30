@@ -1,9 +1,5 @@
-from JackTokenizer import *
 from CompilationEngine import *
 
-tknz = JackTokenizer("test2.jack")
-tknz.export_xml()
-tknz.advance()
 
-ce = CompilationEngine(tknz)
+ce = CompilationEngine(file_name="gerador_vm_teste.jack")
 ce.run()

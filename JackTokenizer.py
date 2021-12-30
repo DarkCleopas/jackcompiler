@@ -25,10 +25,10 @@ class JackTokenizer:
     def __init__(self, file_name):
 
         # Pega apenas o nome do arquivo
-        self.file_name = file_name.split("/")[-1].replace(".jack", "")
+        self.file_name = file_name
 
         # Lê o texto do arquivo
-        self.text = self.read_file(file_name)
+        self.text = self.read_file(file_name + ".jack")
 
         # Dicionario com os tokens
         self.tokens_dict = self.search_tokens(self.text)
@@ -37,7 +37,7 @@ class JackTokenizer:
         self.tokens_list = sorted(self.tokens_dict)
 
         # Token atual
-        self.current_token = ""
+        self.current_token = self.tokens_dict[self.tokens_list[0]]
     
     # Lê o arquivo e retorna o texto
     def read_file(self, file_name):
@@ -69,7 +69,6 @@ class JackTokenizer:
 
         return tokens
     
-
     # Remove os comentários de um texto
     def remove_comments(self, text):
 
@@ -156,6 +155,15 @@ class JackTokenizer:
 
             raise Exception("Não há tokens!")
     
+
+    def has_peek_token(self):
+
+        try:
+            self.tokens_list[1]
+            return True
+        except:
+            return False
+    
     
     def has_more_tokens(self):
 
@@ -190,3 +198,12 @@ class JackTokenizer:
                 xml.write(f"<{token['token_class']}> {token['token']} </{token['token_class']}>\n")
 
             xml.write("</tokens>")
+
+if __name__ == "__main__":
+
+    tknz = JackTokenizer("test.jack")
+    print(tknz.current_token)
+    tknz.advance()
+    print(tknz.current_token)
+    tknz.advance()
+    print(tknz.current_token)

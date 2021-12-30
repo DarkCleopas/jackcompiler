@@ -1,0 +1,12 @@
+class Point {
+    field int x, y;
+    static int pointCount;
+
+    method int distance(Point other) {
+        var int dx;
+        var int dy;
+
+        let dx = 10 + 20 * 30;
+    }
+
+}
