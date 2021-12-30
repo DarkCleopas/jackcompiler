@@ -7,6 +7,15 @@ class Point {
         var int dy;
 
         let dx = 10 + 20 * 30;
+
+        return;
     }
 
+    method int teste(Point other) {
+        var int a;
+
+        let a = 10;
+
+        return;
+    }
 }

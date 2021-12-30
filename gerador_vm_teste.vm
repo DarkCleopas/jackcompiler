@@ -7,3 +7,12 @@ add
 push constant 30
 call Math.multiply 2
 pop local 0
+push constant 0
+return
+function Point.teste 1
+push argument 0
+pop pointer 0
+push constant 10
+pop local 0
+push constant 0
+return

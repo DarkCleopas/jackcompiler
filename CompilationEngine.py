@@ -210,7 +210,6 @@ class CompilationEngine:
             self.expect_peek(TOKEN_IDENT)
 
 
-
     def compile_statements(self):
 
         self.compile_statement()
@@ -239,6 +238,11 @@ class CompilationEngine:
         elif token == "class":
 
             self.compile_class()
+            self.compile_statement()
+        
+        elif token == "return":
+
+            self.compile_return()
             self.compile_statement()
         
         elif token == "EOF":
@@ -468,6 +472,20 @@ class CompilationEngine:
             self.vm.write_arithmetic(VMWriter.NOT)
 
     
+    def compile_return(self):
+
+        self.expect_peek(TOKEN_RETURN)
+
+        if not self.peek_token_is(";"):
+            self.compile_expression()
+            self.vm.write_return()
+        else:
+            self.vm.write_push(VMWriter.CONST, 0)
+            self.vm.write_return()
+        
+
+        self.expect_peek(";")
+
 
     def write_xml_line(self, line):
 
@@ -494,19 +512,18 @@ class CompilationEngine:
                 xml.write(f'{line}\n')
           
 
-    def engine_advance(self, token_advance=True):
+    # def engine_advance(self, token_advance=True):
 
-        token = self.tknz.get_token()
-        token_tye = self.tknz.token_tye()
+    #     token = self.tknz.get_token()
+    #     token_tye = self.tknz.token_tye()
 
-        line = f'<{token_tye}> {token} </{token_tye}>'
+    #     line = f'<{token_tye}> {token} </{token_tye}>'
 
-        self.write_xml_line(line)
+    #     self.write_xml_line(line)
 
-        if token_advance:
+    #     if token_advance:
 
-            self.tknz.advance()
-
+    #         self.tknz.advance()
 
 
     def scope_to_segment(self, scope):
