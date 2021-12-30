@@ -1,0 +1,9 @@
+<tokens>
+<keyword> let </keyword>
+<identifier> count </identifier>
+<symbol> = </symbol>
+<identifier> count </identifier>
+<symbol> + </symbol>
+<integer> 1 </integer>
+<symbol> ; </symbol>
+</tokens>
