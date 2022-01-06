@@ -13,8 +13,8 @@ PATTERNS = {
     "keyword": r"\bclass\b|\bconstructor\b|\bfunction\b|\bmethod\b|\bfield\b|\bstatic\b|\bvar\b|\bint\b|\bchar\b|\bboolean\b|\bvoid\b|\btrue\b|\bfalse\b|\bnull\b|\bthis\b|\blet\b|\bdo\b|\bif\b|\belse\b|\bwhile\b|\breturn\b",
     "symbol": r"\{|\}|\(|\)|\[|\]|\.|\,|\;|\+|\-|\*|\/|\&|\||\<|\>|\=|\~",
     "integer": r"\b\d+\b",
-    "string": r'"([A-Za-z0-9_\./\\-]*)"',
-    "identifier": r"([A-Za-z_][A-Za-z0-9_]*)",
+    "string": r'"([A-Za-z0-9_\ \./\\-]*)"',
+    "identifier": r'("([A-Za-z0-9_\ \./\\-]*)"|[A-Za-z_][A-Za-z0-9_]*)',
 }
 
 # Lista com as palavras chaves
@@ -117,17 +117,18 @@ class JackTokenizer:
                     
                     token = XML_TOKEN_MAP[token]
 
-            # Remove as aspas do token string
-            if token_class == "string":
-
-                token = token.replace('"', "")
 
             # Verifica se o token identifier é uma palavra-chave
             if token_class == "identifier":
 
-                if token in KEYWORDS:
+                if token in KEYWORDS or token[0] == '"':
 
                     continue
+            
+            # Remove as aspas do token string
+            if token_class == "string":
+
+                token = token.replace('"', "")
             
             # Dicionario que armazena as informações do token
             aux = {

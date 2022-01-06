@@ -32,7 +32,7 @@ class CompilationEngine:
 
         self.expect_peek(TOKEN_CLASS)
 
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
         self.class_name = self.current_token["token"]
 
         self.expect_peek("{")
@@ -64,7 +64,7 @@ class CompilationEngine:
 
         token_type = self.current_token["token"]
 
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
 
         name = self.current_token["token"]
 
@@ -73,7 +73,7 @@ class CompilationEngine:
         while self.peek_token_is(","):
 
             self.expect_peek(",")
-            self.expect_peek(TOKEN_IDENT)
+            self.expect_peek(TOKEN_IDENT, token_class=True)
 
             name = self.current_token["token"]
             self.st.define(name, token_type, scope)
@@ -85,7 +85,7 @@ class CompilationEngine:
 
         self.st.start_subroutine()
         self.ifLabelNum = 0
-        self.whileLabelNum = 0
+        self.while_label_num = 0
 
         if self.peek_token_is(TOKEN_CONSTRUCTOR):
             self.expect_peek(TOKEN_CONSTRUCTOR)
@@ -105,7 +105,7 @@ class CompilationEngine:
         else:
             self.compile_type()
         
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
 
         function_name = self.class_name + "." + self.current_token["token"]
 
@@ -144,6 +144,44 @@ class CompilationEngine:
         self.expect_peek("}")
 
 
+    def compile_subroutine_call(self):
+
+        ident = self.current_token["token"]
+        num_args = 0
+        if self.peek_token_is("("):
+            self.expect_peek("(")
+            self.vm.write_push(VMWriter.POINTER, 0)
+            num_args = self.compile_expression_list()
+
+            self.expect_peek(")")
+
+            ident = self.class_name + "." + ident
+            num_args += 1
+            self.vm.write_call(ident, num_args)
+
+        else:
+            self.expect_peek(".")
+            sym, has = self.st.lookup(ident)
+
+            if has:
+                self.vm.write_push(self.scope_to_segment(sym["scope"]), sym["index"])
+                self.expect_peek(TOKEN_IDENT, token_class=True)
+                ident = sym["type"] + "." + self.current_token["token"]
+                self.expect_peek("(")
+
+                num_args = self.compile_expression_list()
+                num_args += 1
+            else:
+                self.expect_peek(TOKEN_IDENT, token_class=True)
+                ident = ident + "." + self.current_token["token"]
+                self.expect_peek("(")
+
+                num_args = self.compile_expression_list()
+
+            self.expect_peek(")")
+            self.vm.write_call(ident, num_args)
+
+
     def compile_var_dec(self):
 
         self.expect_peek(TOKEN_VAR)
@@ -154,7 +192,7 @@ class CompilationEngine:
 
         token_type = self.current_token["token"]
 
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
 
         name = self.current_token["token"]
 
@@ -163,7 +201,7 @@ class CompilationEngine:
         while self.peek_token_is(","):
             self.expect_peek(",")
 
-            self.expect_peek(TOKEN_IDENT)
+            self.expect_peek(TOKEN_IDENT, token_class=True)
             name = self.current_token["token"]
 
             self.st.define(name, token_type, scope)
@@ -178,7 +216,7 @@ class CompilationEngine:
         self.compile_type()
         token_type = self.current_token["token"]
 
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
         name = self.current_token["token"]
 
         self.st.define(name, token_type, scope)
@@ -189,7 +227,7 @@ class CompilationEngine:
             self.compile_type()
             token_type = self.current_token["token"]
 
-            self.expect_peek(TOKEN_IDENT)
+            self.expect_peek(TOKEN_IDENT, token_class=True)
 
             name = self.current_token["token"]
             self.st.define(name, token_type, scope)
@@ -207,7 +245,41 @@ class CompilationEngine:
             self.expect_peek(TOKEN_BOOLEAN)
 
         elif self.peek_token["token_class"] == TOKEN_IDENT:
-            self.expect_peek(TOKEN_IDENT)
+            self.expect_peek(TOKEN_IDENT, token_class=True)
+
+
+    def compile_expression_list(self):
+
+        num_args = 0
+
+        if not self.peek_token_is(")"):
+            self.compile_expression()
+            num_args += 1
+
+        while self.peek_token_is(","):
+
+            self.expect_peek(",")
+
+            self.compile_expression()
+            num_args += 1
+        
+        return num_args
+
+
+    def compile_keyword_const(self, k):
+
+        if k == TOKEN_TRUE:
+            self.expect_peek(TOKEN_TRUE)
+            self.vm.write_push(VMWriter.CONST, 0)
+            self.vm.write_arithmetic(VMWriter.NOT)
+        
+        elif k == TOKEN_FALSE or k == TOKEN_NULL:
+            self.next_token()
+            self.vm.write_push(VMWriter.CONST, 0)
+
+        elif k == TOKEN_THIS:
+            self.expect_peek(TOKEN_THIS)
+            self.vm.write_push(VMWriter.POINTER, 0)
 
 
     def compile_statements(self):
@@ -233,6 +305,11 @@ class CompilationEngine:
         elif token == "let":
 
             self.compile_let()
+            self.compile_statement()
+        
+        elif token == "do":
+
+            self.compile_do()
             self.compile_statement()
 
         elif token == "class":
@@ -274,7 +351,7 @@ class CompilationEngine:
         self.write_xml_line("</classStatement>")  
     
 
-    def compile_if_statements(self):
+    def compile_if(self):
 
         self.write_xml_line("<ifStatement>")
 
@@ -317,37 +394,33 @@ class CompilationEngine:
         self.write_xml_line("</ifStatement>")
     
 
-    def compile_while_statements(self):
+    def compile_while(self):
 
         self.write_xml_line("<whileStatement>")
 
-        self.engine_advance()
+        label_while_exp = f"WHILE_EXP{self.while_label_num}"
+        label_while_end = f"WHILE_END{self.while_label_num}"
+        self.while_label_num += 1
 
-        if self.tknz.get_token() != "(":
-            raise Exception("Expected '('")
+        self.vm.write_label(label_while_exp)
+        self.expect_peek(TOKEN_WHILE)
 
-        self.engine_advance()
+        self.expect_peek("(")
 
         self.compile_expression()
+        self.vm.write_arithmetic(VMWriter.NOT)
+        self.vm.write_if(label_while_end)
 
-        self.tknz.advance()
+        self.expect_peek(")")
 
-        if self.tknz.get_token() != ")":
-            raise Exception("Expected ')'")
-
-        self.engine_advance()
-
-        if self.tknz.get_token() != "{":
-            raise Exception("Expected '{'")
-
-        self.engine_advance()
+        self.expect_peek("{")
 
         self.compile_statements()
 
-        if self.tknz.get_token() != "}":
-            raise Exception("Expected '}'")
+        self.vm.write_goto(label_while_exp)
+        self.vm.write_label(label_while_end)
 
-        self.engine_advance(token_advance=False)
+        self.expect_peek("}")
         
         self.write_xml_line("</whileStatement>")
 
@@ -360,7 +433,7 @@ class CompilationEngine:
 
         self.expect_peek(TOKEN_LET)
 
-        self.expect_peek(TOKEN_IDENT)
+        self.expect_peek(TOKEN_IDENT, token_class=True)
 
         var_name = self.current_token["token"]
         sym = self.st.resolve(var_name)
@@ -392,6 +465,17 @@ class CompilationEngine:
         self.expect_peek(";")
 
         self.write_xml_line("</letStatement>")
+
+
+    def compile_do(self):
+
+        self.expect_peek(TOKEN_DO)
+
+        self.expect_peek(TOKEN_IDENT, token_class=True)
+
+        self.compile_subroutine_call()
+        self.expect_peek(";")
+        self.vm.write_pop(VMWriter.TEMP, 0)
 
 
     def compile_expression(self):
@@ -434,8 +518,65 @@ class CompilationEngine:
         if token["token_class"] == "integer":
             self.next_token()
             self.vm.write_push(VMWriter.CONST, token["token"])
-        # elif token["token_class"] == TOKEN_TRUE or token["token_class"] == TOKEN_FALSE or token["token_class"] == TOKEN_NULL or token["token_class"] == TOKEN_THIS:
-        #     self.compile_keyword_cont(self.peek_token["token"])
+
+        elif token["token"] == TOKEN_TRUE or token["token"] == TOKEN_FALSE or token["token"] == TOKEN_NULL or token["token"] == TOKEN_THIS:
+            self.compile_keyword_const(self.peek_token["token"])
+
+        elif token["token_class"] == "string":
+
+            self.expect_peek("string", token_class=True)
+
+            string = self.current_token["token"]
+            self.vm.write_push(VMWriter.CONST, len(string))
+            self.vm.write_call("String.new", 1)
+
+            for i in range(len(string)):
+                self.vm.write_push(VMWriter.CONST, ord(string[i]))
+                self.vm.write_call("String.appendChar", 2)
+
+        elif token["token_class"] == TOKEN_IDENT:
+
+            self.expect_peek(TOKEN_IDENT, token_class=True)
+            identifier_name = self.current_token["token"]
+
+            if self.peek_token["token"] == "[":
+                self.expect_peek("[")
+
+                self.compile_expression()
+
+                sym = self.st.resolve(identifier_name)
+                self.vm.write_push(self.scope_to_segment(sym["scope"]), sym["index"])
+                self.vm.write_arithmetic(VMWriter.ADD)
+
+                self.expect_peek("]")
+                self.vm.write_pop(VMWriter.POINTER, 1)
+                self.vm.write_push(VMWriter.THAT, 0)
+
+            elif self.peek_token["token"] == "(" or self.peek_token["token"] == TOKEN_DOT:
+                self.compile_subroutine_call()
+
+            else: 
+                sym = self.st.resolve(identifier_name)
+                self.vm.write_push(self.scope_to_segment(sym["scope"]), sym["index"])
+
+        elif token["token"] == "(":
+            self.expect_peek("(")
+
+            self.compile_expression()
+
+            self.expect_peek(")")
+        
+        elif token["token"] == TOKEN_MINUS or token["token"] == TOKEN_NOT:
+
+            self.next_token()
+            op = self.current_token["token"]
+
+            self.compile_term()
+            if op == TOKEN_MINUS:
+                self.vm.write_arithmetic(VMWriter.NEG)
+            else:
+                self.vm.write_arithmetic(VMWriter.NOT)
+
         else:
             raise Exception("Operador não reconhecido: ", token["token"])
 
@@ -552,11 +693,11 @@ class CompilationEngine:
             }
 
 
-    def expect_peek(self, token_type):
+    def expect_peek(self, token_type, token_class=False):
 
         # print(self.peek_token)
 
-        if token_type == TOKEN_IDENT:
+        if token_class:
 
             if self.peek_token["token_class"] == token_type:
 

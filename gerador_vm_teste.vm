@@ -1,12 +1,27 @@
 function Point.distance 2
 push argument 0
 pop pointer 0
-push constant 10
-push constant 20
-add
-push constant 30
-call Math.multiply 2
-pop local 0
+push constant 9
+call String.new 1
+push constant 79
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 109
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 100
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+pop local 1
 push constant 0
 return
 function Point.teste 1

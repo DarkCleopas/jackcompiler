@@ -1,5 +1,5 @@
 from CompilationEngine import *
 
 
-ce = CompilationEngine(file_name="gerador_vm_teste.jack")
+ce = CompilationEngine(file_name="Main.jack")
 ce.run()

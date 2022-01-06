@@ -6,7 +6,7 @@ class Point {
         var int dx;
         var int dy;
 
-        let dx = 10 + 20 * 30;
+        let dy = "Ola mundo";
 
         return;
     }
